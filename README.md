@@ -53,9 +53,13 @@ pass
 
 ### 送分题答案（可选）
 
-![](https://github.com/Ricky846/Markdownimages/blob/main/songfenti1.png?raw=true)
+送分题1：
 
-![](https://github.com/Ricky846/Markdownimages/blob/main/songfenti2.png?raw=true)
+![](tensorrt_llm_july-release-v1/examples/deci/songfenti1.png)
+
+送分题2：
+
+![](tensorrt_llm_july-release-v1/examples/deci/songfenti2.png)
 
 ### 经验与体会（可选）
 
