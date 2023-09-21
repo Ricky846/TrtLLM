@@ -16,7 +16,7 @@
 
 + **DeciCoder**模型中采用的注意力机制为Grouped Query Attention（GQA）,位置编码的方法采用的是Rotary Position Embedding。复赛使用的TensorRT-LLM的版本尚未实现单GPU下的QGA算法，需要参考DeciCoder模型中GQA的实现，用TensorRT-LLM提供的function去进行搭建。
 
-+ 工程实现中由于TensorRT-LLM构建的为静态图，原本模型中一些分支计算均无法在单个模型中实现，因此我们需要根据这一特性重写原模型中QGA部分的计算逻辑，并且为了适应重写的计逻辑，将原本的Rotary Position Embedding算法，以及attention mask的初始化方法也在generation.py中进行了重写。
++ 工程实现中由于TensorRT-LLM构建的为静态图，原本模型中一些分支计算均无法在单个模型中实现，因此我们需要根据这一特性重写原模型中QGA部分的计算逻辑，并且为了适应重写的逻辑，将原本的Rotary Position Embedding算法，以及attention mask的初始化方法也在generation.py中进行了重写。
 
 
 ### 开发与优化过程
