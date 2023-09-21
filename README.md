@@ -6,7 +6,7 @@
 
 模型搭建完的效果：
 
-![](tensorrt_llm_july-release-v1/examples/deci/xiaoguotu.png)
+![](tensorrt_llm_july-release-v1/examples/deci/result_picture/xiaoguotu.png)
 
 代码运行步骤见/tensorrt_llm_july-release-v1/examples/deci下的README.md
 
@@ -51,15 +51,22 @@
 
 如下图：
 
-![](tensorrt_llm_july-release-v1/examples/deci/jingdu1.png)
+![](tensorrt_llm_july-release-v1/examples/deci/result_picture/jingdu1.png)
 
-![](tensorrt_llm_july-release-v1/examples/deci/jingdu2.png)
+![](tensorrt_llm_july-release-v1/examples/deci/result_picture/jingdu2.png)
 
-![](tensorrt_llm_july-release-v1/examples/deci/jingdu3.png)
+![](tensorrt_llm_july-release-v1/examples/deci/result_picture/jingdu3.png)
 
 + 性能分析：
 
-在本次比赛中，最终搭建的模型在性能表现上不尽人意，一方面是我们没有实现构建fp16精度下的模型，另一方面在通过nsys观察run.py运行的timeline的时候发现，存在很大一部分非CUDA Kernel的运行时间，检查generation.py代码分析可能这部分时间是用于prepare shape和buffer等操作。
+在本次比赛中，最终搭建的模型在性能表现上与原本模型还是有一定差距。但针对自身搭建模型，我们做了两方面的优化：一方面是将模型从fp32精度转换为fp16精度，另一方面则是对计算图进行了一些简单的优化。对计算图的优化主要是将一些常量在模型初始化阶段进行计算，对一些重复的shape计算进行了合并。下面主要说一下转精度为fp16的过程。
+虽然我们使用的模型本身就是在fp16的精度下搭建的，但是当我们尝试以fp16精度构建engine的时候，出现了“No implementation of layer {……} for requested layer computation precision and output precision”。经过排查发现报错的这个layer里面包含了一些我们在model中定义的最后一层layer的节点和不在这一层中的节点，判断可能是TRT内部的操作把这些节点尝试融合成一个layer然后出现了错误。被合并的第一个节点是一个对past key和past value进行concat的节点，我们将该节点的结果用identity节点进行一次计算之后这个问题得到了解决，成功构建了精度为fp16的engine。
+
+最开始搭建的模型性能：
+![fp32](tensorrt_llm_july-release-v1/examples/deci/result_picture/fp32.png)
+
+优化后模型的性能：
+![fp16](tensorrt_llm_july-release-v1/examples/deci/result_picture/fp16.png)
 
 ### Bug报告（可选）
 
@@ -69,12 +76,16 @@
 
 送分题1：
 
-![](tensorrt_llm_july-release-v1/examples/deci/songfenti1.png)
+![](tensorrt_llm_july-release-v1/examples/deci/result_picture/songfenti1.png)
 
 送分题2：
 
-![](tensorrt_llm_july-release-v1/examples/deci/songfenti2.png)
+![](tensorrt_llm_july-release-v1/examples/deci/result_picture/songfenti2.png)
 
 ### 经验与体会（可选）
 
+Todo：
+本次比赛由于前期构建engine花费时间过多，留给优化模型的时间就很少了，目前看来对qkv计算的操作如果能够合并到一个linear算子的话还能够进一步缩短推理时间。另一方面在通过nsys观察run.py运行的timeline的时候发现，存在很大一部分非CUDA Kernel的运行时间，检查generation.py代码分析可能这部分时间是用于prepare shape和buffer等操作，感觉这部分的操作还有优化空间。
+在导出fp16并做精度对其的过程中也发现了所有的rms norm的计算都会出现精度不对齐的warnning，查看function中rms_norm发现这个算子是在float32精度下进行计算的，产生warnning的原因应该就在这里。
 
+四十多天的比赛即将告一段落，我们队伍从初赛的刚刚入门TRT，到复赛运用TRT-LLM搭建完模型，我们在这中间学习并获得了许多知识和经验，也让我们直观的感受到了TRT在模型推理加速的效果，复赛阶段的大模型构建，也让我们对Transformer、大模型有了深刻的了解。尽管这次模型搭建完的性能上并不是很令人满意，但是在比赛中获得了技术的进步，学习到了新的知识，也是让我们感到开心的事情，
