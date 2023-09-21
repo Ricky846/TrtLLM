@@ -62,10 +62,10 @@
 在本次比赛中，最终搭建的模型在性能表现上与原本模型还是有一定差距。但针对自身搭建模型，我们做了两方面的优化：一方面是将模型从fp32精度转换为fp16精度，另一方面则是对计算图进行了一些简单的优化。对计算图的优化主要是将一些常量在模型初始化阶段进行计算，对一些重复的shape计算进行了合并。下面主要说一下转精度为fp16的过程。
 虽然我们使用的模型本身就是在fp16的精度下搭建的，但是当我们尝试以fp16精度构建engine的时候，出现了“No implementation of layer {……} for requested layer computation precision and output precision”。经过排查发现报错的这个layer里面包含了一些我们在model中定义的最后一层layer的节点和不在这一层中的节点，判断可能是TRT内部的操作把这些节点尝试融合成一个layer然后出现了错误。被合并的第一个节点是一个对past key和past value进行concat的节点，我们将该节点的结果用identity节点进行一次计算之后这个问题得到了解决，成功构建了精度为fp16的engine。
 
-最开始搭建的模型性能：
+最开始搭建的模型性能(max_output_len=100)：
 ![fp32](tensorrt_llm_july-release-v1/examples/deci/result_picture/fp32.png)
 
-优化后模型的性能：
+优化后模型的性能(max_output_len=100)：
 ![fp16](tensorrt_llm_july-release-v1/examples/deci/result_picture/fp16.png)
 
 ### Bug报告（可选）
