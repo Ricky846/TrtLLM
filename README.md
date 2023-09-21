@@ -8,7 +8,7 @@
 
 ![](tensorrt_llm_july-release-v1/examples/deci/result_picture/xiaoguotu.png)
 
-代码运行步骤见/tensorrt_llm_july-release-v1/examples/deci下的README.md
+代码运行步骤见[tensorrt_llm_july-release-v1/examples/deci/README.md](/tensorrt_llm_july-release-v1/examples/deci/README.md).
 
 ### 主要开发工作
 
