@@ -59,7 +59,7 @@
 
 + 性能分析：
 
-pass
+在本次比赛中，最终搭建的模型在性能表现上不尽人意，一方面是我们没有实现构建fp16精度下的模型，另一方面在通过nsys观察run.py运行的timeline的时候发现，存在很大一部分非CUDA Kernel的运行时间，检查generation.py代码分析可能这部分时间是用于prepare shape和buffer等操作。
 
 ### Bug报告（可选）
 
