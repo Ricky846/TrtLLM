@@ -98,6 +98,12 @@ def parse_arguments():
                         type=str,
                         default=False,
                         choices=['float16', 'bfloat16', 'float32'])
+    parser.add_argument('--use_identity_plugin',
+                        nargs='?',
+                        const='float16',
+                        type=str,
+                        default=False,
+                        choices=['float16', 'bfloat16', 'float32'])
     
     args = parser.parse_args()
 
@@ -127,7 +133,7 @@ def build_rank_engine(builder: Builder,
         hidden_size=args.n_embd,
         vocab_size=args.vocab_size,
         max_position_embeddings=args.n_positions,
-        dtype=kv_dtype,
+        dtype=args.dtype,
         num_key_value_heads=args.n_kv_head,
         intermediate_size=args.inter_size,
         hidden_act=args.hidden_act,
@@ -148,19 +154,19 @@ def build_rank_engine(builder: Builder,
         tok = time.time()
         t = time.strftime('%H:%M:%S', time.gmtime(tok - tik))
         logger.info(f'HF LLaMA loaded. Total time: {t}')
-        load_weight( deci,tensorrt_llm_deci)
+        load_weight( deci,tensorrt_llm_deci, dtype=args.dtype)
         del deci
 
     network = builder.create_network()
     network.trt_network.name = engine_name
     if args.use_gemm_plugin:
         network.plugin_config.set_gemm_plugin(dtype=args.use_gemm_plugin)
-    # what is gemm_plugin?
+    if args.use_identity_plugin:
+        network.plugin_config.set_identity_plugin(dtype=args.use_identity_plugin)
 
     with net_guard(network):
         # Prepare
-        # tem = tensorrt_llm_deci.named_parameters()
-        # print(tem)
+
         network.set_named_parameters(tensorrt_llm_deci.named_parameters())
 
         # Forward
@@ -170,14 +176,7 @@ def build_rank_engine(builder: Builder,
                                                    args.max_beam_width)
 
         tensorrt_llm_deci(*inputs)
-        # if args.enable_debug_output:
-        #     # mark intermediate nodes' outputs
-        #     for k, v in tensorrt_llm_deci.named_network_outputs():
-        #         v = v.trt_tensor
-        #         v.name = k
-        #         network.trt_network.mark_output(v)
-        #         v.dtype = kv_dtype
-        # temp = tensorrt_llm_deci.named_parameters
+
  
     engine = None
 
@@ -221,10 +220,6 @@ def build(rank, args):
                                    cur_rank, args)
         assert engine is not None, f'Failed to build engine for rank {cur_rank}'
 
-        # if cur_rank == 0:
-        #     # Use in-memory timing cache for multiple builder passes.
-        #     if not args.parallel_build:
-        #         cache = builder_config.trt_builder_config.get_timing_cache()
 
         serialize_engine(engine, os.path.join(args.output_dir, engine_name))
 

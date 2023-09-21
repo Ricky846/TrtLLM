@@ -24,11 +24,11 @@ git clone https://huggingface.co/Deci/DeciCoder-1b
 Use the following command to build the TensorRT engine:
 
 ```bash
-python build.py --model_dir ./DeciCoder-1b --dtype float32 --use_gemm_plugin float32 --output_dir ./trt_engines/fp32/1-gpu/
+python build.py --model_dir ./DeciCoder-1b --dtype float16 --use_gemm_plugin float16 --use_identity_plugin float16 --output_dir ./trt_engines/fp16/1-gpu/
 ```
 
 The following command can be used to run the DeciCoder model on a single GPU:
 
 ```bash
-python run.py --input_text "def print_hello_world():" --max_output_len=50 --tokenizer_dir ./DeciCoder-1b --engine_dir=./trt_engines/fp32/1-gpu/
+python run.py --input_text "def print_hello_world():" --max_output_len=50 --tokenizer_dir ./DeciCoder-1b --engine_dir=./trt_engines/fp16/1-gpu/
 ```

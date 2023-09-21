@@ -14,6 +14,8 @@ from generation import ModelConfig, SamplingConfig, GenerationSession
 
 from build import get_engine_name  # isort:skip
 
+import datetime
+
 EOS_TOKEN = 2
 PAD_TOKEN = 2
 

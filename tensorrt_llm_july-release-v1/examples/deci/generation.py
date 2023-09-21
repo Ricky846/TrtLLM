@@ -774,25 +774,11 @@ class GenerationSession(object):
                 'last_token_ids': last_token_ids
             }
         else:
-            attention_mask = kwargs.pop('attention_mask')
-            # num_beams = kwargs.pop('num_beams')
-            # attention_mask = torch.cat((attention_mask,
-            #                             attention_mask.new_ones(
-            #                                 (batch_size * num_beams, 1))),
-            #                            dim=-1).contiguous()
-            # position_ids = attention_mask.long().cumsum(-1) - 1
-            # position_ids.masked_fill_(attention_mask == 0, 1)
-            # position_ids = position_ids[:, -1].unsqueeze(-1)
-            # position_ids = position_ids.int()
-
-            # select_buf = np.tril(np.ones((attention_mask.shape))).astype(bool)
-            # select_buf = np.logical_not(select_buf)
-            # mask_buf = np.zeros_like(select_buf, np.float32)
-            # mask_buf[select_buf] = float('-inf')
-            # attention_mask = torch.tensor(mask_buf, dtype=torch.int32, device='cuda')
-
-            attention_mask = torch.zeros((1,32,2048,2048), dtype=torch.int32, device='cuda')
-
+            step = kwargs.pop('step')
+            if step == 0:
+                attention_mask = torch.zeros((1,32,2048,2048), dtype=torch.int32, device='cuda')
+            else:
+                attention_mask = kwargs.pop('attention_mask')
             position_ids = torch.ones((1,7), dtype=torch.int32).cuda()
 
             return {
@@ -1029,7 +1015,7 @@ class GenerationSession(object):
                                             input_lengths, batch_size,
                                             scfg.num_beams, max_input_length,
                                             self.max_seq_length)
-
+      
         return final_output_ids
 
 
